@@ -35,3 +35,5 @@
 npm-debug.log
 testem.log
 /.chrome
+
+src/lib/core/theming/prebuilt/pink-bluegrey.scss

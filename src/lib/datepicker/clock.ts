@@ -9,6 +9,7 @@ import {
 
 export const CLOCK_HOURS = 24;
 export const CLOCK_MINUTES = 60;
+export const CLOCK_SECONDS = 60;
 export const CLOCK_RADIUS = 120;
 export const CLOCK_INNER_RADIUS = 66;
 export const CLOCK_OUTER_RADIUS = 99;
@@ -32,13 +33,15 @@ export class Md2Clock {
 
   private _time: string;
 
-  _view: boolean = true;
+  _view: string = 'hour';
 
-  _hours: Array<Object> = [];
-  _minutes: Array<Object> = [];
+  _hours: Array < Object > = [];
+  _minutes: Array < Object > = [];
+  _seconds: Array < Object > = [];
 
   _hour: number = 0;
   _minute: number = 0;
+  _second: number = 0;
 
   constructor(private _element: ElementRef) {
     this.renderClock();
@@ -46,36 +49,44 @@ export class Md2Clock {
     this.mouseUpListener = (event: any) => { this._handleMouseup(event); };
   }
 
-  @Output() timeChange: EventEmitter<string> = new EventEmitter<string>();
-  @Output() onHourChange: EventEmitter<number> = new EventEmitter<number>();
-  @Output() onMinuteChange: EventEmitter<number> = new EventEmitter<number>();
+  @Output() timeChange: EventEmitter < string > = new EventEmitter < string > ();
+  @Output() onHourChange: EventEmitter < number > = new EventEmitter < number > ();
+  @Output() onMinuteChange: EventEmitter < number > = new EventEmitter < number > ();
+  @Output() onSecondChange: EventEmitter < number > = new EventEmitter < number > ();
 
   @Input()
-  get time() { return this._time; }
+  get time() {
+    return this._time;
+  }
   set time(value: string) {
     if (this._time !== value) {
-      this._time = value || '00:00';
+      this._time = value || '00:00:00';
       this._hour = parseInt(this._time.split(':')[0]);
       this._minute = parseInt(this._time.split(':')[1]);
+      this._second = this._time.split(':')[2] ? parseInt(this._time.split(':')[2]) : 0;
     }
   }
 
   @Input()
   set view(value: string) {
     if (value === 'minute') {
-      this._view = false;
-    } else { this._view = true; }
+      this._view = 'minute';
+    } else if (value === 'second') {
+      this._view = 'second';
+    } else { this._view = 'hour'; }
   }
 
   get hand(): any {
     let deg = 0;
     let radius = CLOCK_OUTER_RADIUS;
-    if (this._view) {
+    if (this._view === 'hour') {
       let inner = this._hour > 0 && this._hour < 13;
       radius = inner ? CLOCK_INNER_RADIUS : CLOCK_OUTER_RADIUS;
       deg = Math.round(this._hour * (360 / (CLOCK_HOURS / 2)));
-    } else {
+    } else if(this._view === 'minute') {
       deg = Math.round(this._minute * (360 / CLOCK_MINUTES));
+    }else{
+      deg = Math.round(this._second * (360 / CLOCK_SECONDS));
     }
 
     return {
@@ -103,14 +114,16 @@ export class Md2Clock {
     document.removeEventListener('touchmove', this.mouseMoveListener);
     document.removeEventListener('mouseup', this.mouseUpListener);
     document.removeEventListener('touchend', this.mouseUpListener);
-    if (this._view) {
+    if (this._view === 'hour') {
       this.onHourChange.emit(this._hour);
-    } else {
+    } else if(this._view === 'minute') {
       this.onMinuteChange.emit(this._minute);
+    } else {
+      this.onSecondChange.emit(this._second);
     }
   }
 
-  _handleKeydown(event: KeyboardEvent) { }
+  _handleKeydown(event: KeyboardEvent) {}
 
   /** Emits an event when the user selects a time. */
   _emitChangeEvent(): void {
@@ -142,6 +155,15 @@ export class Md2Clock {
         left: CLOCK_RADIUS + Math.sin(radian) * CLOCK_OUTER_RADIUS - CLOCK_TICK_RADIUS
       });
     }
+
+    for (let i = 0; i < CLOCK_SECONDS; i += 5) {
+      let radian = i / 30 * Math.PI;
+      this._seconds.push({
+        second: i === 0 ? '00' : i,
+        top: CLOCK_RADIUS - Math.cos(radian) * CLOCK_OUTER_RADIUS - CLOCK_TICK_RADIUS,
+        left: CLOCK_RADIUS + Math.sin(radian) * CLOCK_OUTER_RADIUS - CLOCK_TICK_RADIUS
+      });
+    }
   }
 
   /**
@@ -158,24 +180,27 @@ export class Md2Clock {
     let x = (width / 2) - (pageX - triggerRect.left - window.pageXOffset);
     let y = (height / 2) - (pageY - triggerRect.top - window.pageYOffset);
     let radian = Math.atan2(-x, y);
-    let unit = Math.PI / (this._view ? 6 : 30);
+    let unit = Math.PI / (this._view === 'hour' ? 6 : 30);
     let z = Math.sqrt(x * x + y * y);
-    let inner = this._view && z < (CLOCK_OUTER_RADIUS + CLOCK_INNER_RADIUS) / 2;
+    let inner = this._view === 'hour' && z < (CLOCK_OUTER_RADIUS + CLOCK_INNER_RADIUS) / 2;
     let value = 0;
 
     if (radian < 0) { radian = Math.PI * 2 + radian; }
     value = Math.round(radian / unit);
     radian = value * unit;
 
-    if (this._view) {
+    if (this._view === 'hour') {
       if (value === 12) { value = 0; }
       value = inner ? (value === 0 ? 12 : value) : value === 0 ? 0 : value + 12;
       this._hour = value;
-    } else {
+    } else if(this._view === 'minute'){
       if (value === 60) { value = 0; }
       this._minute = value;
+    }else{
+      if (value === 60) { value = 0; }
+      this._second = value;
     }
-    this._time = this._hour + ':' + this._minute;
+    this._time = this._hour + ':' + this._minute + ':' + this._second;
     this._emitChangeEvent();
   }
 

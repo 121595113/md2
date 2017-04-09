@@ -23,7 +23,9 @@ export class DatepickerDemo {
   types: Array<any> = [
     { text: 'Date', value: 'date' },
     { text: 'Time', value: 'time' },
-    { text: 'Date Time', value: 'datetime' }];
+    { text: 'Date Time', value: 'datetime' },
+    { text: 'Time Second', value: 'timesecond' },
+    { text: 'Second', value: 'second' }];
 
   mode: string = 'auto';
   modes: Array<any> = [

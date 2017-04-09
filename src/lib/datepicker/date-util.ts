@@ -1,15 +1,13 @@
 import { DateLocale } from './date-locale';
 
 export class DateUtil {
-
   today(): Date {
     return new Date();
   }
-
   _locale: DateLocale = new DateLocale();
 
   parseDateMap: any = {
-    'y': 0,      // placeholder -> ctorIndex
+    'y': 0, // placeholder -> ctorIndex
     'Y': [0, -2000],
     'M': [1, 1], // placeholder -> [ctorIndex, offset|value array]
     'n': [1, this._locale.shortMonths],
@@ -25,7 +23,7 @@ export class DateUtil {
     'a': [3, ['am', 'pm']]
   };
 
-  replace(s: string, regexp: any, sub?: string) {
+  replace(s: string, regexp: any, sub ? : string) {
     return (s != null ? '' + s : '').replace(regexp, sub != null ? sub : '');
   }
 
@@ -74,7 +72,7 @@ export class DateUtil {
       index < 0 ? Math.max(list.length + index, 0) : Math.min(list.length, index);
   }
 
-  find(list: any, findFunc: any, startIndex?: any, endIndex?: any) {
+  find(list: any, findFunc: any, startIndex ? : any, endIndex ? : any) {
     let f = this.getFindFunc(findFunc);
     let e = this.getFindIndex(list, endIndex, list.length);
     let r: any;
@@ -160,6 +158,12 @@ export class DateUtil {
           ctorArgs[mapEntry] += value;
         }
       }
+    }
+    if (fmt === 'HH:mm' || fmt === 'HH:mm:ss' || fmt === 'mm:ss' || fmt === 'ss') {
+      let date = new Date();
+      ctorArgs[0] = date.getFullYear();
+      ctorArgs[1] = date.getMonth();
+      ctorArgs[2] = date.getDate();
     }
     let d = new Date(ctorArgs[0], ctorArgs[1], ctorArgs[2], ctorArgs[3], ctorArgs[4],
       ctorArgs[5], ctorArgs[6]);
@@ -274,6 +278,17 @@ export class DateUtil {
   getWeekOfMonth(date: Date) {
     let firstDayOfMonth = this.getFirstDateOfMonth(date);
     return Math.floor((firstDayOfMonth.getDay() + date.getDate() - 1) / 7);
+  }
+
+  /**
+   * Gets a new date incremented by the given number of seconds. Number of seconds can be negative.
+   * @param {Date} date
+   * @param {number} numberOfSecond
+   * @returns {Date}
+   */
+  incrementSeconds(date: Date, numberOfSecond: number) {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(),
+      date.getHours(), date.getMinutes(), date.getSeconds() + numberOfSecond);
   }
 
   /**

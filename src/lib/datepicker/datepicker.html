@@ -1,4 +1,4 @@
-﻿<div class="md2-datepicker-trigger">
+<div class="md2-datepicker-trigger">
   <button type="button"
           class="md2-datepicker-button"
           tabindex="-1"
@@ -6,7 +6,7 @@
     <svg *ngIf="type==='date'" width="24" height="24" viewBox="0 0 24 24">
       <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"></path>
     </svg>
-    <svg *ngIf="type==='time'" width="24" height="24" viewBox="0 0 24 24">
+    <svg *ngIf="type==='time' || type==='timesecond' || type==='second'" width="24" height="24" viewBox="0 0 24 24">
       <path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"></path>
     </svg>
     <svg *ngIf="type==='datetime'" width="24" height="24" viewBox="0 0 24 24">
@@ -41,24 +41,26 @@
        [attr.container]="container" [attr.mode]="mode">
     <div class="md2-datepicker-header">
       <div class="md2-datepicker-header-year"
-           *ngIf="type!=='time'"
+           *ngIf="type!=='time' && type!=='timesecond' && type!=='second'"
            [class.active]="_isYearsVisible"
            (click)="_showYear()">{{ date | date: 'y' }}</div>
       <div class="md2-datepicker-header-date-time">
         <span class="md2-datepicker-header-date"
-              *ngIf="type!=='time'"
+              *ngIf="type!=='time' && type!=='timesecond' && type!=='second'"
               [class.active]="_isCalendarVisible && !_isYearsVisible"
               (click)="_showCalendar()">
           {{ getDateLabel }}
         </span>
-        <span class="md2-datepicker-header-time"
-              *ngIf="type!=='date'"
-              [class.active]="!_isCalendarVisible">
-          <span class="md2-datepicker-header-hour"
-                [class.active]="_clockView === 'hour'"
-                (click)="_toggleHours('hour')">{{ date.getHours() }}</span>:<span class="md2-datepicker-header-minute"
-                                                                                  [class.active]="_clockView === 'minute'"
-                                                                                  (click)="_toggleHours('minute')">{{ date.getMinutes() }}</span>
+        <span class="md2-datepicker-header-time" *ngIf="type!=='date'" [class.active]="!_isCalendarVisible">
+          <template [ngIf]="type !== 'second'">
+            <span class="md2-datepicker-header-hour"
+                  [class.active]="_clockView === 'hour'"
+                  (click)="_toggleHours('hour')">{{ date.getHours() }}</span>:<span class="md2-datepicker-header-minute" [class.active]="_clockView === 'minute'" (click)="_toggleHours('minute')">{{ date.getMinutes() >= 10 ? date.getMinutes() : "0" + date.getMinutes()}}</span>
+          </template>
+          <template [ngIf]="type === 'timesecond' || type === 'second'">
+            <template [ngIf]="type === 'timesecond'">:</template>
+            <span  class="md2-datepicker-header-second" [class.active]="_clockView === 'second'" (click)="_toggleHours('second')">{{ date.getSeconds() >= 10 ? date.getSeconds() : "0" + date.getSeconds()}}</span>
+          </template>
         </span>
       </div>
     </div>
@@ -115,7 +117,8 @@
                  [view]="_clockView"
                  (timeChange)="_onTimeChange($event)"
                  (onHourChange)="_onHourChange($event)"
-                 (onMinuteChange)="_onMinuteChange($event)"></md2-clock>
+                 (onMinuteChange)="_onMinuteChange($event)"
+                 (onSecondChange)="_onSecondChange($event)"></md2-clock>
       <div class="md2-datepicker-actions">
         <div class="md2-button" (click)="close()">{{ cancelLabel }}</div>
         <div class="md2-button" (click)="_onClickOk()">{{ okLabel }}</div>
