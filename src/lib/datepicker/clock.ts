@@ -23,6 +23,7 @@ export const CLOCK_TICK_RADIUS = 17;
   host: {
     'role': 'clock',
     '(mousedown)': '_handleMousedown($event)',
+    '(touchstart)': '_handleMousedown($event)',
   },
   encapsulation: ViewEncapsulation.None
 })
@@ -32,6 +33,8 @@ export class Md2Clock {
   private mouseUpListener: any;
 
   private _time: string;
+  private _scrollTopX: number;
+  private _scrollTopY: number;
 
   _view: string = 'hour';
 
@@ -98,6 +101,10 @@ export class Md2Clock {
 
   _handleMousedown(event: any) {
     this.setTime(event);
+    if(event.touches) {
+      this._scrollTopX = window.scrollX;
+      this._scrollTopY = window.scrollY;
+    }
     document.addEventListener('mousemove', this.mouseMoveListener);
     document.addEventListener('touchmove', this.mouseMoveListener);
     document.addEventListener('mouseup', this.mouseUpListener);
@@ -105,7 +112,7 @@ export class Md2Clock {
   }
 
   _handleMousemove(event: any) {
-    event.preventDefault();
+    !event.touches && event.preventDefault();
     this.setTime(event);
   }
 
@@ -114,6 +121,9 @@ export class Md2Clock {
     document.removeEventListener('touchmove', this.mouseMoveListener);
     document.removeEventListener('mouseup', this.mouseUpListener);
     document.removeEventListener('touchend', this.mouseUpListener);
+    if(event.touches) {
+      window.scrollTo(this._scrollTopX,this._scrollTopY);
+    }
     if (this._view === 'hour') {
       this.onHourChange.emit(this._hour);
     } else if(this._view === 'minute') {

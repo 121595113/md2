@@ -349,12 +349,15 @@ md2-datepicker {
 
 .md2-calendar-dates {
   margin: 0 8px;
+  border-collapse: inherit;
+  border-spacing: 2px;
   th {
     width: 35px;
     height: 16px;
     font-weight: 500;
     line-height: 10px;
     opacity: 0.5;
+    text-align: center;
   }
   td {
     padding: 0;
